@@ -45,7 +45,7 @@ if ($quicksearch_search_found_flag == 1) { # Found the username, but there's no 
 	print "The username \"$searching_for\" was found, but has no phone number in the system\n";
 	exit 0;
 }
-#getting here - means that no phone number was found for argument as uid..
+#getting here - means that no phone number was found for the argument as uid..
 close LDAP;
 my ($phone,$count,$thread_completed_flag):shared;
 my $users;
@@ -86,7 +86,8 @@ sub phone ($$) {
         if (($line=~/^cn:/) && ($username=~/\w+/)) {
                 ($fullname=$line)=~s/^cn:\s{1}(.*)/$1/;
                 chomp $fullname;
-                if ($fullname=~/$searching_for/i) {
+		my ($first_name,$last_name)= split /\s/,$fullname;	
+                if ($first_name =~/^$searching_for/i or $last_name =~ /^$searching_for/i) {
                         $count++;
                         $users->{$username}{'fullname'}=$fullname;
                 	$users->{$username}{'phone'}="Not specified"; #Initiate the phone to Not specified - will be replaced by number if found
@@ -104,7 +105,7 @@ sub phone ($$) {
         }
 }
 sub printdot {
-	print "No such username: \"$searching_for\". Will try to find \"$searching_for\" as a substring of any user's full name.\nSearching";
+	print "No such username: \"$searching_for\". Will try to find first or last name that begins with \"$searching_for\".\nSearching";
 	while (!$thread_completed_flag) { # print dots as long as the searching wasn't finished
 		print ".";
 		sleep 1;

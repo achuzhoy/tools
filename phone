@@ -22,7 +22,7 @@ my $quicksearch_search_found_flag;
 my $phone;
 my $fullname;
 while (my $line=<LDAP>) {
-	$quicksearch_search_found_flag=1 if ($line=~/^#.*?Users, redhat.com$/);  # the username was found
+	$quicksearch_search_found_flag=1 if ($line=~/^#.*?Users, redhat.com$/i);  # the username was found
 	if ($line=~/^telephoneNumber:/) { # getting to this line means that the userid was found
 		if ($line=~/^telephoneNumber:\s{1}.*?(\d{5})$/) { # deal with normal office numbers 
 			($phone=$line)=~s/^telephoneNumber:\s{1}.*?(\d{5})$/$1/;  
@@ -59,7 +59,7 @@ sub main {
 	my $username;
 	while (my $line=<LDAP>) {
 		next if $line=~/^\s+/; # omit empty lines	
-		if ($line=~/^#.*?Users, redhat.com$/) { # change the username every time you run into comment at the beginning of the line
+		if ($line=~/^#.*?Users, redhat.com$/i) { # change the username every time you run into comment at the beginning of the line
 			($username=$line)=~s/^\#\s{1}(.*?),.*$/$1/; # reset the username
 			chomp $username;
 		} 

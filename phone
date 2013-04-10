@@ -24,8 +24,8 @@ my $fullname;
 while (my $line=<LDAP>) {
 	$quicksearch_search_found_flag=1 if ($line=~/^#.*?Users, redhat.com$/i);  # the username was found
 	if ($line=~/^rhatPhoneExt:/) { # getting to this line means that the userid was found
-		if ($line=~/^rhatPhoneExt:\s{1}.*?(\d{5})$/) { # deal with normal office numbers 
-			($phone=$line)=~s/^rhatPhoneExt:\s{1}.*?(\d{5})$/$1/;  
+		if ($line=~/^rhatPhoneExt:\s{1}.*?(\d{7})$/) { # deal with normal office numbers 
+			($phone=$line)=~s/^rhatPhoneExt:\s{1}.*?(\d{7})$/$1/;  
 		}  else {
 			($phone=$line)=~s/^rhatPhoneExt:\s{1}(.*)$/$1/; # deal with numbers like 986-057-2439 - assume these numbers aren't internal
 		}

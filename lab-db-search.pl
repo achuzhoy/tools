@@ -4,7 +4,7 @@ use Getopt::Long;
 use DBI;
 my ($help,$racknum,$model,$models,$total,$info,$verbose,$labid);
 GetOptions('help|?' => \$help,'rack=i' => \$racknum, 'model=s' => \$model,'models' => \$models,'labid=i' => \$labid, 'verbose'=>\$verbose, 'total'=> \$total, 'info=s' => \$info);
-&help() unless ($help || $racknum || $model || $models || $total || $info || $labid);
+&help() unless ( $racknum || $model || $models || $total || $info || $labid);
 my %hash;
 my $dbh = DBI->connect('DBI:mysql:<dbname>:hostname=<hostname>','<username>', '<password>') || die "Could not connect to database: $DBI::errstr";
 &info if $info;

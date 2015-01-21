@@ -2,3 +2,6 @@ This repository is a collection of simple tools that can save time executing dai
 1. phone - discover office phone number of a colleague.
 2. lab-db-search.pl - retrieve info about lab equipment
 3. update_db.pl - update the lab db
+4. create_vm_openstack.sh - placed in the directory with the keystonerc_admin file, tests the newly deployed RHOS setup by launching an instance. 
+                  TODO: 1. Add missing checks before creating services - in progress.
+                        2. Add routines to clean the setup

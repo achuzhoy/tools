@@ -8,7 +8,8 @@ esac
 
 
 # Declarations of functions to be used
-function neutron_or_nova {
+
+function check_pcs_status {
     which pcs >/dev/null 2>&1
     if [ "$?" != "0" ]; then
     #if [ "${PIPESTATUS[0]}" != "0" ]; then
@@ -29,10 +30,15 @@ function neutron_or_nova {
                 echo "Attempting to clean the failed actions (force mode)."
                 for i in `pcs status|awk '/Failed/{flag=1;next}/PCSD/{flag=0}flag'| awk -F"_" '/[a-z]/ {print $1}'`; do 
                     echo "cleaning $i"
-                    pcs resource cleanup $i
+                    timeout 10 pcs resource cleanup $i
                     if [ "$?" != "0" ]; then
-                        echo "Failed to clean $i. Exiting."
-                        exit 1
+                        echo "Failed to clean $i. It may help to rerun the script the same way."
+                        echo "To continue running the script despite the error? y/n"
+                        read answer
+                        if [ "$answer" != "y" ]; then
+                            echo "Exiting." 
+                            exit 1
+                        fi
                     fi
                 done
             fi
@@ -40,6 +46,9 @@ function neutron_or_nova {
             echo "PCS reports no failed actions"
         fi
     fi
+}
+
+function neutron_or_nova {
     pcs status 2>/dev/null|grep -q neutron 
     if [ "$?" == "0" ]; then
         echo "This is a neutron deployment"
@@ -239,13 +248,13 @@ function floating-asoc {
     test "nova floating-ip-associate"
 }
 
+# start running the functions
 if [ "$1" == "clean" ]; then
     keystonerc_admin
     clean
     exit 0
 fi
-
-# start running the functions
+check_pcs_status
 neutron_or_nova
 if [ "$deployment" == "neutron" ]; then
     set_network_settings

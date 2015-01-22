@@ -19,14 +19,22 @@ function neutron_or_nova {
         count=`pcs status|awk '/Failed/{flag=1;next}/PCSD/{flag=0}flag'| awk '/[a-z]/ {print}'|wc -l`
         if [ $count -gt 0 ]; then
             echo "PCS reports the following failed actions:"
-            for i in `pcs status|awk '/Failed/{flag=1;next}/PCSD/{flag=0}flag'| awk '/[a-z]/ {print $1}'`; do 
+            for i in `pcs status|awk '/Failed/{flag=1;next}/PCSD/{flag=0}flag'| awk -F"_" '/[a-z]/ {print $1}'`; do 
                 echo "    $i"
             done
             if [ "$force" != "yes" ]; then
-                echo "Please clean the failed actions and restart the script. Exiting."
+                echo "Please clean the failed actions manually and restart the script or run the script with "-f". Exiting."
                 exit 1
             else
-                echo "Ignoring the failed actions (force mode)."
+                echo "Attempting to clean the failed actions (force mode)."
+                for i in `pcs status|awk '/Failed/{flag=1;next}/PCSD/{flag=0}flag'| awk -F"_" '/[a-z]/ {print $1}'`; do 
+                    echo "cleaning $i"
+                    pcs resource cleanup $i
+                    if [ "$?" != "0" ]; then
+                        echo "Failed to clean $i. Exiting."
+                        exit 1
+                    fi
+                done
             fi
         else
             echo "PCS reports no failed actions"
@@ -199,7 +207,7 @@ function instance {
         netid="tenant"
     fi
     while ! glance image-list|grep -q active; do 
-        echo "The glance image isn't active yet. Sleeping for 1 sec."
+        echo "The glance image isn't active yet. Sleeping for 1 second."
         sleep 1
     done
     nova boot --flavor 1 --key_name oskey --image `glance image-list|awk -F"|" '/cirros/ {print $2}'`  --nic net-id=`nova net-list|awk -F"|" "/$netid/ {print substr(\\$2,2,length(\\$2))}"`  nisim1
@@ -207,7 +215,7 @@ function instance {
 }
 
 function security {
-    echo "Security - adding ICMP and SSH to the default"
+    echo "Security - adding ICMP and SSH to the default security group"
     nova secgroup-add-rule default icmp -1 -1  0.0.0.0/0
     test "nova secgroup icmp"
     nova secgroup-add-rule default tcp 22 22  0.0.0.0/0

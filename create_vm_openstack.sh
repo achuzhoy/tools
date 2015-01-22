@@ -219,7 +219,7 @@ function instance {
         echo "The glance image isn't active yet. Sleeping for 1 second."
         sleep 1
     done
-    nova boot --flavor 1 --key_name oskey --image `glance image-list|awk -F"|" '/cirros/ {print $2}'`  --nic net-id=`nova net-list|awk -F"|" "/$netid/ {print substr(\\$2,2,length(\\$2))}"`  nisim1
+    nova boot --flavor 1 --key_name oskey --image `glance image-list|awk -F"|" '/cirros/ {print $2}'`  --nic net-id=`nova net-list|awk -F"|" "/$netid/ {print substr(\\$2,2,length(\\$2))}"|head -n 1`  nisim1
     test "nova boot nisim1"
 }
 

@@ -30,7 +30,7 @@ function check_pcs_status {
                 echo "Attempting to clean the failed actions (force mode)."
                 for i in `pcs status|awk '/Failed/{flag=1;next}/PCSD/{flag=0}flag'| awk -F"_" '/[a-z]/ {print $1}'`; do 
                     echo "cleaning $i"
-                    timeout 5 pcs resource cleanup $i
+                    timeout 3 pcs resource cleanup $i
                     if [ "$?" != "0" ]; then
                         echo "Failed to clean $i. It may help to rerun the script the same way."
                         echo -n "To continue running the script despite the error? [y/n] "
@@ -72,14 +72,14 @@ function keystonerc_admin {
 
 function test {
     if [ "$?" != "0" ]; then
-        echo "There was an error with ${1}. Exiting...."
+        echo -e '\E[47;31m'"\033[1m"There was an error running ${1}. Exiting...."\033[0m"
         exit 1
     fi
 }
 
 function clean {
     echo "Deleting the created instance" 
-    instance1=`nova list|awk -F"|" '/Running/ {print $3}'`
+    instance1=`nova list|awk -F"|" "/$instance_name/ {print \\$3}"`
     if [ "$instance1" == "" ]; then
         echo "No instances appear to be running. Exiting..."
     else
@@ -136,7 +136,7 @@ function glance-image-create {
     glance image-list|grep -q cirros
     test "glance image-list"
     if [ "$?" == "0" ]; then
-        echo "The image already exists... Skipping."
+        echo -e '\t\E[47;32m'"\033[1m"The image already exists... Skipping."\033[0m"
     else
         echo "Creating the glance image"
         glance image-create --name cirros --disk-format qcow2 --container-format bare --is-public 1 --copy-from https://launchpad.net/cirros/trunk/0.3.0/+download/cirros-0.3.0-x86_64-disk.img
@@ -147,13 +147,13 @@ function glance-image-create {
 function keypair {
     echo "Checking if the \"oskey\" keypair was already created."
     nova keypair-list|grep -q oskey
-    test keypair-list
+    test "nova keypair-list"
     if [ "$?" == "0" ]; then
-        echo "The keypair was already created... Skipping."
+        echo -e '\t\E[47;32m'"\033[1m"The keypair was already created... Skipping."\033[0m"
     else
         echo "Creating the keypair"
         nova keypair-add oskey > oskey.priv
-        test keypair-add
+        test "nova keypair-add"
         chmod 600 oskey.priv
     fi
 }
@@ -163,7 +163,7 @@ function external-network {
     neutron net-list|grep -q public
     test "neutron net-list"
     if [ "$?" == "0" ]; then
-        echo "The external network was already created... Skipping."
+        echo -e '\t\E[47;32m'"\033[1m"The external network was already created... Skipping."\033[0m"
     else
         echo "Creating the external network"
         neutron net-create public --provider:network_type flat --provider:physical_network physnet-external --router:external=True
@@ -176,7 +176,7 @@ function external-subnet {
     neutron subnet-list|grep -q $NETADDR
     test "neutron subnet-list"
     if [ "$?" == "0" ]; then
-        echo "The subnet for the external network was already created... Skipping."
+        echo -e '\t\E[47;32m'"\033[1m"The subnet for the external network was already created... Skipping."\033[0m"
     else
         echo "Creating the subnet for the external network"
         neutron subnet-create public --gateway $GATEWAY $NETADDR  --enable_dhcp=False --allocation-pool start=${START_IP},end=${END_IP}
@@ -189,7 +189,7 @@ function tenant-network {
     neutron net-list|grep -q tenant 
     test "neutron net-list"
     if [ "$?" == "0" ]; then
-        echo "The tenant network was already created... Skipping."
+        echo -e '\t\E[47;32m'"\033[1m"The tenant network was already created... Skipping."\033[0m"
     else
         #  for VXLAN
         echo "Creating the tenant network"
@@ -212,7 +212,7 @@ function tenant-subnet {
     neutron subnet-list|grep -q 192.168.32
     test "neutron subnet-list"
     if [ "$?" == "0" ]; then
-        echo "The subnet for the tenant network was already created... Skipping."
+        echo -e '\t\E[47;32m'"\033[1m"The subnet for the tenant network was already created... Skipping."\033[0m"
     else
         echo "Creating a subnet under the tenant network"
         neutron subnet-create tenant --gateway 192.168.32.1 192.168.32.0/24 --enable_dhcp=True --allocation-pool start=192.168.32.2,end=192.168.32.100 --dns 8.8.8.8
@@ -223,13 +223,13 @@ function tenant-subnet {
 function router {
     echo "Checking if the router was already created."
     neutron router-list|grep -q r1
-    test "router-list"
+    test "neutron router-list"
     if [ "$?" == "0" ]; then
-        echo "The router was already created... Skipping."
+        echo -e '\t\E[47;32m'"\033[1m"The router was already created... Skipping."\033[0m"
     else
         echo "Creating the router"
         neutron router-create r1
-        test "router-create"
+        test "neutron router-create"
     fi
 }
 
@@ -238,7 +238,7 @@ function router-interface {
     neutron port-list|grep -q 192.168.32.1
     test "neutron port-list"
     if [ "$?" == "0" ]; then
-        echo "The interface was already added to the router... Skipping."
+        echo -e '\t\E[47;32m'"\033[1m"The interface was already added to the router... Skipping."\033[0m"
     else
         echo "Adding an interface to the router on the tenant subnet"
         neutron router-interface-add r1 `neutron subnet-list|awk -F"|" '/192.168.32/ {print $2}'` ip_address 192.168.32.1
@@ -248,10 +248,10 @@ function router-interface {
 
 function router-gateway {
     echo "Checking if the gateway was already set for the router."
-    neutron router-show r1|grep "external_gateway_info.*true"
+    neutron router-show r1|grep -q "external_gateway_info.*true"
     test "neutron router-show"
     if [ "$?" == "0" ]; then
-        echo "The gateway was already set for the router... Skipping."
+        echo -e '\t\E[47;32m'"\033[1m"The gateway was already set for the router... Skipping."\033[0m"
     else
         echo "Seting the gateway for router"
         neutron router-gateway-set r1 public
@@ -270,15 +270,14 @@ function instance {
         sleep 1
     done
     echo "Checking if the instance was already launched."
-    nova list|grep -q nisim
-    test "nova list"
+    nova list|grep -q $instance_name
     if [ "$?" == "0" ]; then
         echo "The instance was already launched.... Exiting."
         exit 1
     else
         echo "booting an instance"
-        nova boot --flavor 1 --key_name oskey --image `glance image-list|awk -F"|" '/cirros/ {print $2}'`  --nic net-id=`nova net-list|awk -F"|" "/$netid/ {print substr(\\$2,2,length(\\$2))}"|head -n 1`  nisim1
-        test "nova boot nisim1"
+        nova boot --flavor 1 --key_name oskey --image `glance image-list|awk -F"|" '/cirros/ {print $2}'`  --nic net-id=`nova net-list|awk -F"|" "/$netid/ {print substr(\\$2,2,length(\\$2))}"|head -n 1`  $instance_name
+        test "nova boot $instance_name"
     fi
 }
 
@@ -287,7 +286,7 @@ function security {
     nova secgroup-list-rules default|grep -q icmp
     test "nova secgroup-list-rules icmp"
     if [ "$?" == "0" ]; then
-        echo "The ICMP was already added to the default security group...Skipping."
+        echo -e '\t\E[47;32m'"\033[1m"The ICMP was already added to the default security group...Skipping."\033[0m"
     else
         echo "Security - adding ICMP to the default security group"
         nova secgroup-add-rule default icmp -1 -1  0.0.0.0/0
@@ -297,7 +296,7 @@ function security {
     nova secgroup-list-rules default|grep -q 22
     test "nova secgroup-list-rules ssh"
     if [ "$?" == "0" ]; then
-        echo "SSH was already added to the default security group...Skipping."
+        echo -e '\t\E[47;32m'"\033[1m"SSH was already added to the default security group...Skipping."\033[0m"
     else
         echo "Security - adding SSH to the default security group"
         nova secgroup-add-rule default tcp 22 22  0.0.0.0/0
@@ -310,7 +309,7 @@ function floating-create {
     nova floating-ip-list|grep -q public
     test "nova floating-ip-list"
     if [ "$?" == "0" ]; then
-        echo "The floating IP was already created in the public network...Skipping."
+        echo -e '\t\E[47;32m'"\033[1m"The floating IP was already created in the public network...Skipping."\033[0m"
     else
         echo "Creating the floating IP in the public network"
         nova floating-ip-create public
@@ -320,42 +319,45 @@ function floating-create {
 
 function floating-asoc {
     echo "Associating the floating IP with the instance"
-    while ! nova list|awk -F"|" '/nisim1/ {print $(NF-1)}'|grep -q 192.168.32; do 
+    while ! nova list|awk -F"|" '/$instance_name/ {print $(NF-1)}'|grep -q 192.168.32; do 
         echo "The instance doesn't have a tenant IP assigned yet. Sleeping 1 second."
         sleep 1
    done
     
-    nova floating-ip-associate --fixed-address `nova list|awk -F"|" '/nisim1/ {print $(NF-1)}'|awk -F"=" '{print $2}'`  `nova list|awk -F"|" '/nisim1/ {print $2}'`  `nova floating-ip-list|awk -F"|" '/public/ {print $2}'`
+    nova floating-ip-associate --fixed-address `nova list|awk -F"|" '/$instance_name/ {print $(NF-1)}'|awk -F"=" '{print $2}'`  `nova list|awk -F"|" '/$instance_name/ {print $2}'`  `nova floating-ip-list|awk -F"|" '/public/ {print $2}'`
     test "nova floating-ip-associate"
 }
-
-# start running the functions
-if [ "$1" == "clean" ]; then
+function main {
+    instance_name="nisim1"
+    # start running the functions
+    if [ "$1" == "clean" ]; then
+        keystonerc_admin
+        clean
+        exit 0
+    fi
+    check_pcs_status
+    neutron_or_nova
+    if [ "$deployment" == "neutron" ]; then
+        set_network_settings
+    fi
     keystonerc_admin
-    clean
-    exit 0
-fi
-check_pcs_status
-neutron_or_nova
-if [ "$deployment" == "neutron" ]; then
-    set_network_settings
-fi
-keystonerc_admin
-glance-image-create
-keypair
-if [ "$deployment" == "neutron" ]; then
-    external-network
-    external-subnet
-    tenant-network
-    tenant-subnet
-    router
-    router-interface
-    router-gateway
-fi
-instance
-security
-if [ "$deployment" == "neutron" ]; then
-   floating-create
-   floating-asoc
-fi
-echo "Completed."
+    glance-image-create
+    keypair
+    if [ "$deployment" == "neutron" ]; then
+        external-network
+        external-subnet
+        tenant-network
+        tenant-subnet
+        router
+        router-interface
+        router-gateway
+    fi
+    instance
+    security
+    if [ "$deployment" == "neutron" ]; then
+       floating-create
+       floating-asoc
+    fi
+    echo "Completed."
+}
+main $1

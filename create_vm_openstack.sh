@@ -134,7 +134,6 @@ function set_network_settings {
 function glance-image-create {
     echo "Checking if the cirros image was already created."
     glance image-list|grep -q cirros
-    test "glance image-list"
     if [ "$?" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The image already exists... Skipping."\033[0m"
     else

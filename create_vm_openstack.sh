@@ -342,7 +342,7 @@ function floating-asoc {
         sleep 1
    done
     
-    nova floating-ip-associate --fixed-address `nova list|awk -F"|" '/$instance_name/ {print $(NF-1)}'|awk -F"=" '{print $2}'`  `nova list|awk -F"|" '/$instance_name/ {print $2}'`  `nova floating-ip-list|awk -F"|" '/public/ {print $2}'`
+    nova floating-ip-associate --fixed-address `nova list|grep $instance_name |awk -F"|" '{print $(NF-1)}'|awk -F"=" '{print $2}'`  `nova list|grep $instance_name |awk -F"|" '{print $2}'`  `nova floating-ip-list|awk -F"|" '/public/ {print $2}'`
     test "nova floating-ip-associate"
 }
 function main {

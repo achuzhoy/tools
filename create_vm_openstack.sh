@@ -146,7 +146,6 @@ function glance-image-create {
 function keypair {
     echo "Checking if the \"oskey\" keypair was already created."
     nova keypair-list|grep -q oskey
-    test "nova keypair-list"
     if [ "$?" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The keypair was already created... Skipping."\033[0m"
     else
@@ -160,7 +159,6 @@ function keypair {
 function external-network {
     echo "Checking if the external network was already created."
     neutron net-list|grep -q public
-    test "neutron net-list"
     if [ "$?" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The external network was already created... Skipping."\033[0m"
     else
@@ -173,7 +171,6 @@ function external-network {
 function external-subnet {
     echo "Checking if the subnet for the external network was already created."
     neutron subnet-list|grep -q $NETADDR
-    test "neutron subnet-list"
     if [ "$?" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The subnet for the external network was already created... Skipping."\033[0m"
     else
@@ -186,7 +183,6 @@ function external-subnet {
 function tenant-network {
     echo "Checking if the tenant network was already created."
     neutron net-list|grep -q tenant 
-    test "neutron net-list"
     if [ "$?" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The tenant network was already created... Skipping."\033[0m"
     else
@@ -209,7 +205,6 @@ function tenant-network {
 function tenant-subnet {
     echo "Checking if the subnet for the tenant network was already created."
     neutron subnet-list|grep -q 192.168.32
-    test "neutron subnet-list"
     if [ "$?" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The subnet for the tenant network was already created... Skipping."\033[0m"
     else
@@ -222,7 +217,6 @@ function tenant-subnet {
 function router {
     echo "Checking if the router was already created."
     neutron router-list|grep -q r1
-    test "neutron router-list"
     if [ "$?" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The router was already created... Skipping."\033[0m"
     else
@@ -235,7 +229,6 @@ function router {
 function router-interface {
     echo "Checking if the interface was already added to the router."
     neutron port-list|grep -q 192.168.32.1
-    test "neutron port-list"
     if [ "$?" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The interface was already added to the router... Skipping."\033[0m"
     else
@@ -248,7 +241,6 @@ function router-interface {
 function router-gateway {
     echo "Checking if the gateway was already set for the router."
     neutron router-show r1|grep -q "external_gateway_info.*true"
-    test "neutron router-show"
     if [ "$?" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The gateway was already set for the router... Skipping."\033[0m"
     else
@@ -283,7 +275,6 @@ function instance {
 function security {
     echo "Checking if ICMP was already added to the default security group."
     nova secgroup-list-rules default|grep -q icmp
-    test "nova secgroup-list-rules icmp"
     if [ "$?" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The ICMP was already added to the default security group...Skipping."\033[0m"
     else
@@ -293,7 +284,6 @@ function security {
     fi
     echo "Checking if SSH was already added to the default security group."
     nova secgroup-list-rules default|grep -q 22
-    test "nova secgroup-list-rules ssh"
     if [ "$?" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"SSH was already added to the default security group...Skipping."\033[0m"
     else
@@ -306,7 +296,6 @@ function security {
 function floating-create {
     echo "Checking if the floating IP was already created in the public network."
     nova floating-ip-list|grep -q public
-    test "nova floating-ip-list"
     if [ "$?" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The floating IP was already created in the public network...Skipping."\033[0m"
     else

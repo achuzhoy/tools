@@ -70,7 +70,7 @@ function keystonerc_admin {
 }
 
 function test_piped {
- if [ "${PIPESTATUS[0]}" != "0" ]; then
+ if [ "${pipe_array[0]}" != "0" ]; then
         echo -e '\E[47;31m'"\033[1m"There was an error running ${1}. Exiting...."\033[0m"
         exit 1
     fi
@@ -140,8 +140,9 @@ function set_network_settings {
 function glance-image-create {
     echo "Checking if the cirros image was already created."
     glance image-list|grep -q cirros
+    pipe_array=(${PIPESTATUS[@]})
     test_piped "glance image-list"
-    if [ "$?" == "0" ]; then
+    if [ "${pipe_array[1]}" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The image already exists... Skipping."\033[0m"
     else
         echo "Creating the glance image"
@@ -153,8 +154,9 @@ function glance-image-create {
 function keypair {
     echo "Checking if the \"oskey\" keypair was already created."
     nova keypair-list|grep -q oskey
+    pipe_array=(${PIPESTATUS[@]})
     test_piped "nova keypair-list"
-    if [ "$?" == "0" ]; then
+    if [ "${pipe_array[1]}" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The keypair was already created... Skipping."\033[0m"
     else
         echo "Creating the keypair"
@@ -167,8 +169,9 @@ function keypair {
 function external-network {
     echo "Checking if the external network was already created."
     neutron net-list|grep -q public
+    pipe_array=(${PIPESTATUS[@]})
     test_piped "neutron net-list"
-    if [ "$?" == "0" ]; then
+    if [ "${pipe_array[1]}" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The external network was already created... Skipping."\033[0m"
     else
         echo "Creating the external network"
@@ -180,8 +183,9 @@ function external-network {
 function external-subnet {
     echo "Checking if the subnet for the external network was already created."
     neutron subnet-list|grep -q $NETADDR
+    pipe_array=(${PIPESTATUS[@]})
     test_piped "neutron subnet-list"
-    if [ "$?" == "0" ]; then
+    if [ "${pipe_array[1]}" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The subnet for the external network was already created... Skipping."\033[0m"
     else
         echo "Creating the subnet for the external network"
@@ -193,8 +197,9 @@ function external-subnet {
 function tenant-network {
     echo "Checking if the tenant network was already created."
     neutron net-list|grep -q tenant 
+    pipe_array=(${PIPESTATUS[@]})
     test_piped "neutron net-list"
-    if [ "$?" == "0" ]; then
+    if [ "${pipe_array[1]}" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The tenant network was already created... Skipping."\033[0m"
     else
         #  for VXLAN
@@ -216,8 +221,9 @@ function tenant-network {
 function tenant-subnet {
     echo "Checking if the subnet for the tenant network was already created."
     neutron subnet-list|grep -q 192.168.32
+    pipe_array=(${PIPESTATUS[@]})
     test_piped "neutron subnet-list"
-    if [ "$?" == "0" ]; then
+    if [ "${pipe_array[1]}" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The subnet for the tenant network was already created... Skipping."\033[0m"
     else
         echo "Creating a subnet under the tenant network"
@@ -229,8 +235,9 @@ function tenant-subnet {
 function router {
     echo "Checking if the router was already created."
     neutron router-list|grep -q r1
+    pipe_array=(${PIPESTATUS[@]})
     test_piped "neutron router-list"
-    if [ "$?" == "0" ]; then
+    if [ "${pipe_array[1]}" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The router was already created... Skipping."\033[0m"
     else
         echo "Creating the router"
@@ -242,8 +249,9 @@ function router {
 function router-interface {
     echo "Checking if the interface was already added to the router."
     neutron port-list|grep -q 192.168.32.1
+    pipe_array=(${PIPESTATUS[@]})
     test_piped "neutron port-list"
-    if [ "$?" == "0" ]; then
+    if [ "${pipe_array[1]}" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The interface was already added to the router... Skipping."\033[0m"
     else
         echo "Adding an interface to the router on the tenant subnet"
@@ -255,8 +263,9 @@ function router-interface {
 function router-gateway {
     echo "Checking if the gateway was already set for the router."
     neutron router-show r1|grep -q "external_gateway_info.*true"
+    pipe_array=(${PIPESTATUS[@]})
     test_piped "neutron router-show"
-    if [ "$?" == "0" ]; then
+    if [ "${pipe_array[1]}" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The gateway was already set for the router... Skipping."\033[0m"
     else
         echo "Seting the gateway for router"
@@ -290,8 +299,9 @@ function instance {
 function security {
     echo "Checking if ICMP was already added to the default security group."
     nova secgroup-list-rules default|grep -q icmp
+    pipe_array=(${PIPESTATUS[@]})
     test_piped "nova secgroup-list-rules icmp"
-    if [ "$?" == "0" ]; then
+    if [ "${pipe_array[1]}" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The ICMP was already added to the default security group...Skipping."\033[0m"
     else
         echo "Security - adding ICMP to the default security group"
@@ -300,8 +310,9 @@ function security {
     fi
     echo "Checking if SSH was already added to the default security group."
     nova secgroup-list-rules default|grep -q 22
+    pipe_array=(${PIPESTATUS[@]})
     test_piped "nova secgroup-list-rules ssh"
-    if [ "$?" == "0" ]; then
+    if [ "${pipe_array[1]}" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"SSH was already added to the default security group...Skipping."\033[0m"
     else
         echo "Security - adding SSH to the default security group"
@@ -313,8 +324,9 @@ function security {
 function floating-create {
     echo "Checking if the floating IP was already created in the public network."
     nova floating-ip-list|grep -q public
+    pipe_array=(${PIPESTATUS[@]})
     test_piped "nova floating-ip-list"
-    if [ "$?" == "0" ]; then
+    if [ "${pipe_array[1]}" == "0" ]; then
         echo -e '\t\E[47;32m'"\033[1m"The floating IP was already created in the public network...Skipping."\033[0m"
     else
         echo "Creating the floating IP in the public network"
@@ -335,6 +347,7 @@ function floating-asoc {
 }
 function main {
     instance_name="nisim1"
+    declare -a pipe_array
     # start running the functions
     if [ "$1" == "clean" ]; then
         keystonerc_admin

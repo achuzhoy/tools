@@ -337,7 +337,7 @@ function floating-create {
 
 function floating-asoc {
     echo "Associating the floating IP with the instance"
-    while ! nova list|awk -F"|" '/$instance_name/ {print $(NF-1)}'|grep -q 192.168.32; do 
+    while ! nova list|grep $instance_name |awk -F"|" '{print $(NF-1)}'|grep -q 192.168.32; do 
         echo "The instance doesn't have a tenant IP assigned yet. Sleeping 1 second."
         sleep 1
    done

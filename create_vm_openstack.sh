@@ -112,7 +112,7 @@ function set_network_settings {
     echo " (3) VLAN"
     read  NETWORK_TYPE
     if [ "$NETWORK_TYPE" != "1" -a "$NETWORK_TYPE" != "2" -a "$NETWORK_TYPE" != "3" ]; then
-        echo "Error! The selection can be either 1 or 2 only."
+        echo "Error! The selection can be either 1,2 or 3 only."
         set_network_settings
     fi
     echo "Please provide the external Network Address using CIDR notation (eg. 192.168.100.0/24). This value will be used to set the external network in RHOS."
@@ -213,7 +213,7 @@ function tenant-network {
             test "neutron net-create tenant (GRE)"
         # for VLAN
         else
-            neutron net-create tenant --provider:network_type vlan --provider:segmentation_id 10 --router:external False
+            neutron net-create tenant --provider:network_type vlan --provider:physical_network physnet-tenants  --router:external False
             test "neutron net-create tenant (VLAN)"
         fi
     fi

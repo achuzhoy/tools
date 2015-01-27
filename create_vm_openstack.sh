@@ -60,7 +60,7 @@ function neutron_or_nova {
     
 function keystonerc_admin {
     keystonrc="/root/keystonerc_admin"
-    echo "Attempting to source the $keystonrc"
+    echo "Attempting to source $keystonrc"
     if [ -f $keystonrc ]; then 
         source $keystonrc
     else
@@ -346,11 +346,11 @@ function floating-asoc {
     test "nova floating-ip-associate"
 }
 function main {
+    keystonerc_admin
     instance_name="nisim1"
     declare -a pipe_array
     # start running the functions
     if [ "$1" == "clean" ]; then
-        keystonerc_admin
         clean
         exit 0
     fi
@@ -359,7 +359,6 @@ function main {
     if [ "$deployment" == "neutron" ]; then
         set_network_settings
     fi
-    keystonerc_admin
     glance-image-create
     keypair
     if [ "$deployment" == "neutron" ]; then

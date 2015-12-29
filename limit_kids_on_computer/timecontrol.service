@@ -1,0 +1,13 @@
+[Unit]
+Description=time control daemon to limit the time the machine is UP in a day
+After=multi-user.target
+
+[Service]
+ExecStart=/usr/sbin/timecontrol -d
+#ExecStop=/bin/rm /var/run/timecontrol.run
+# These two should be used with traditional UNIX forking daemons
+# consult systemd.service(5) for more details
+Type=forking
+
+[Install]
+WantedBy=graphical.target

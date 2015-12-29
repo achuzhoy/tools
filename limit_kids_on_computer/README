@@ -1,0 +1,7 @@
+The following will allow limiting the time your kid plays on a computer to 2 hours on any given day.
+Tested on Fedora22. 
+
+1. Copy the timecontrol.service file to /etc/systemd/system/timecontrol.service
+2. Copy the timecontrol file to /usr/sbin/timecontrol
+3. Run "systemctl enable timecontrol; systemctl start timecontrol"
+

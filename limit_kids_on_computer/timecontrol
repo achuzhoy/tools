@@ -1,0 +1,42 @@
+#!/bin/bash
+#This script limits the time the machine is ON to 2 hours. 
+PAUSE=5
+ALLOWED_TIME_SEC=7200 # 2 hours
+STARTTIME=`expr $(date +%s) - $( expr 3600 \* 5 )` # - 5 hours, because the epoch is for GMT and Canada is GMT-5
+DAYS_SINCE_EPOCH=`expr $STARTTIME / 86400`
+TIMECONTROL_FILE=/var/log/timecontrol.info
+if [ ! -f $TIMECONTROL_FILE ]; then #if the file recording when the program started doesn't exist-create it. The file should remain across reboots.
+    echo "epoch: $STARTTIME" > $TIMECONTROL_FILE
+    echo "online: 0" >> $TIMECONTROL_FILE
+fi
+PREVIOUS_DAY=$(expr $(awk '/epoch/ {print $NF}' $TIMECONTROL_FILE) / 86400)
+if [ "$PREVIOUS_DAY" == "" ]; then #the file isn't right
+    echo "Error! Something's wrong with the $TIMECONTROL_FILE file... Exiting."
+    exit 1
+fi
+if [ $DAYS_SINCE_EPOCH -gt $PREVIOUS_DAY ]; then # reset the timestamp if it's a new day
+    echo "epoch: $STARTTIME" > $TIMECONTROL_FILE
+    echo "online: 0" >> $TIMECONTROL_FILE
+fi
+
+
+function timecontrol
+{
+    while true; do 
+        spent_online=$( expr $(awk '/online/ {print $NF}' $TIMECONTROL_FILE) + $PAUSE)  #add the paused second to the time spent online
+        if [ $spent_online -ge $ALLOWED_TIME_SEC ]; then  #if spent online more/equal than the allowed time - get out of the loop
+            break
+        fi
+        sleep $PAUSE
+        sed -i -r 's/(online: )(.*)/\1 '$((spent_online))'/' $TIMECONTROL_FILE   #update the spent online time with the PAUSE value on every iteration
+    done
+    export DISPLAY=:0.0
+    zenity --info --text "Turning off the computer in 2 minutes. See you again tomorrow sweety." --title "Play time for today has expired" &
+    sleep 120  #give enough time to say goodbye and maybe fix the script
+    wall "hello"
+
+    shutdown -h now
+}
+timecontrol &
+
+

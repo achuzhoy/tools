@@ -1,0 +1,21 @@
+heat_template_version: 2013-05-23
+
+description: HOT template for creating a dummy network
+
+parameters:
+  net_name:
+    type: string
+    description: A dummy network - just to test funcionality of heat
+    default: private
+
+
+resources:
+  private_net:
+        type: OS::Neutron::Net
+        properties:
+          name: { get_param: net_name }
+
+outputs:
+  created_network:
+    description: Created network
+    value: { get_attr: [ private_net, name ] }

@@ -1,0 +1,7 @@
+To create a stack (will only create a neutron network), run:
+heat stack-create -f heat-simplest-stack.yaml -P net_name=stacknet network
+
+#The above translates to:
+#create a stack named "network" using the details from file heat-simplest-stack.yaml and use the value stacknet for param net_name. 
+
+#Starting from Mitaka - you better switch to openstack unified cli command. Example will follow...

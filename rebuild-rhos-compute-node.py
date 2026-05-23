@@ -17,7 +17,7 @@ def rebuild(host,mgmt):
     else:
         print("Something went wrong running "+curlcommand+" Exiting...")
         sys.exit(status)
-    ipmicommand="ipmitool -I lanplus -H "+mgmt+" -U USERID -P PASSW0RD chassis power cycle"
+    ipmicommand="ipmitool -I lanplus -H "+mgmt+" -U USERID -P PASSW0RD2 chassis power cycle"
     (status,output)=commands.getstatusoutput(ipmicommand)
     print(output)
     if status != 0:
